@@ -50,7 +50,7 @@ def draw_area_chart(place, list_bboxes_types, bboxes_list):
     y = np.array(list_bboxes_types)
     y = y.transpose()
     y = y / y.sum(axis=0).astype(float) * 100
-    ax.stackplot(range(len(list_bboxes_types)), y, legend=[o.description for o in Ores])
+    ax.stackplot(range(len(list_bboxes_types)), y, labels=[o.description for o in Ores])
     ax.set_title('100 % stacked area chart')
     ax.set_ylabel('Percent (%)')
     ax.set_xlabel("time in frames")
