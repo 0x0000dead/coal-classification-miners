@@ -3,8 +3,8 @@
 ### Installation & Run
 Clone the repo and change to the project root directory:
 ```
-git clone https://github.com/0x0000dead/ores-classification-miners.git
-cd ores-classification-miners
+git clone https://github.com/0x0000dead/coal-classification-miners.git
+cd coal-classification-miners
 ```
 
 Install requirements:
