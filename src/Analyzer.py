@@ -1,7 +1,13 @@
+import os
+
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import torch
 import torch.utils.data
 import torchvision
+from sahi.utils.coco import Coco, CocoCategory, CocoImage, CocoAnnotation
+from sahi.utils.file import save_json
+import re
+import json
 
 
 class Analyzer:
@@ -24,78 +30,55 @@ class Analyzer:
 
         elif self.model_type == 'yolo':
             self.model = torch.hub.load('ultralytics/yolov5', 'custom',
-                           path=r'C:\Users\Sergey\Documents\GitHub\coal-classification-miners\model\best.pt',
+                                        path=r'C:\Users\Sergey\Documents\GitHub\coal-classification-miners\model\best.pt',
                                         )
-                           #force_reload=True) # если не работает то раскоментить
-            self.model.conf = box_conf_th  # NMS confidence threshold
-            self.model.iou = nms_th  # NMS IoU threshold
-            self.model.amp = amp  # Automatic Mixed Precision (AMP) inference
+            # force_reload=True)
+            self.model.conf = box_conf_th
+            self.model.iou = nms_th
+            self.model.amp = amp
 
         self.model.eval()
 
-    def get_json_yolo(self, model):
-        pass
-        # return model.predict(self.data)
-
-    def get_json_rcnn(self, model):
-        pass
-        # return model.predict(self.data)
+    def get_data_rcnn(self, imgs):
+        preds = self.model(imgs)
+        return preds
 
     def get_data(self, img):
         results = self.model(img)
-        return results.render(), results.pandas().xyxy[0].to_json(orient="records")
-        # print(results.xyxy[0])  # print img1 predictions
-        # len_dataloader = len(data_loader)
-        # for imgs, annotations, paths in data_loader:
-        #     i += 1
-        #     imgs = list(img.to(device) for img in imgs)
-        #     preds = model(imgs)
-        #     print(f'Iteration: {i}/{len_dataloader}')
-        #     for batch_item in preds:
-        #         count_best_boxes = 1
-        #         for score in batch_item['scores']:
-        #             if score > threshold:
-        #                 count_best_boxes += 1
-        #
-        #         boxes = batch_item['boxes'][:count_best_boxes]
-        #         file_name = paths[counter % train_batch_size]
-        #         image_id = int(re.findall(r'\d+', file_name)[0])
-        #         coco_image = CocoImage(file_name=file_name, height=1080, width=1920, id=image_id)
-        #         coco_image
-        #         img = imgs[counter % train_batch_size].cpu().detach().numpy()
-        #         img = ((img - img.min()) * (1 / (img.max() - img.min()) * 255)).astype('uint8')
-        #         images = cv2.imread(str(test_dir_path) + str("/") + str(file_name))
-        #
-        #         drawBBox(images, boxes, i)
-        #
-        #         continue
-        #         for box in boxes:
-        #             print(test_dir_path)
-        #             print(file_name)
-        #             width, height = Image.open(test_dir_path / file_name).size
-        #             x_min = box[0].item()
-        #             y_min = box[1].item()
-        #             width = box[2].item() - x_min
-        #             height = box[3].item() - y_min
-        #             coco_image.add_annotation(
-        #                 CocoAnnotation(
-        #                     bbox=[x_min, y_min, width, height],
-        #                     category_id=1,
-        #                     category_name='stone1',
-        #                     image_id=image_id
-        #                 )
-        #             )
-        #         coco.add_image(coco_image)
-        #         counter += 1
+        return results.pandas().xyxy[0].to_json(orient="records")
 
-        # save_json(data=coco.json, save_path=submission_path)
 
-import cv2
 if __name__ == '__main__':
+    coco = Coco()
+    coco.add_category(CocoCategory(id=0, name='stone0'))
+    coco.add_category(CocoCategory(id=1, name='stone1'))
+
     analyzer = Analyzer(model_path=r'C:\Users\Sergey\Documents\GitHub\coal-classification-miners\model\best.pt',
-                        mode_type='yolo')
-    img = cv2.imread(r"C:\Users\Sergey\Documents\GitHub\coal-classification-miners\data\public\frame1254.jpg")
-    print(analyzer.get_data(img))
+                        mode_type='yolo',
+                        box_conf_th=0.9)
+    glob_path = 'C:/Users/Sergey/Documents/GitHub/coal-classification-miners/data/public/'
+    for path in (os.listdir(glob_path)):
+        js = (analyzer.get_data(glob_path + path))
+        js = json.loads(js)
+        image_id = int(re.findall(r'\d+', path)[0])
+        coco_image = CocoImage(file_name=path, height=1080, width=1920, id=image_id)
+        for i in js:
+            width, height = 1920, 1080
+            x_min = i['xmin']
+            y_min = i['ymin']
+            width = i['xmax'] - x_min
+            height = i['ymax'] - y_min
+            coco_image.add_annotation(
+                CocoAnnotation(
+                    bbox=[x_min, y_min, width, height],
+                    category_id=1,
+                    category_name='stone1',
+                    image_id=image_id
+                )
+            )
+        coco.add_image(coco_image)
+    save_json(data=coco.json,
+              save_path=r"C:\Users\Sergey\Documents\GitHub\coal-classification-miners\model\submission.json")
 
 # threshold = 0.5
 # пустой конвеер - джсон пустой
