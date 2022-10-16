@@ -59,7 +59,10 @@ def main():
 
     # 0 for web camera
     cap = cv2.VideoCapture('resources/example.mp4')
+    i = 0
     while cap.isOpened():
+        i += 5
+        cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         ret, frame = cap.read()
 
         bboxes_list = json.loads(analyzer.get_bboxes(frame))
@@ -70,6 +73,7 @@ def main():
         image_location.image(frame, channels="BGR")
 
         draw_max_size_hist(histogram_max_size, list_max_sizes, bboxes_list)
+
 
     cap.release()
     cv2.destroyAllWindows()
