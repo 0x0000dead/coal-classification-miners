@@ -15,3 +15,8 @@ pip install -r requirements.txt
 And run:
 ```
 streamlit run streamplit.py
+```
+
+**Example of work**
+
+![demo][https://github.com/0x0000dead/coal-classification-miners/tree/main/resources/demo.gif]
