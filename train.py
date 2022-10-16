@@ -9,7 +9,7 @@ import os
 
 
 def train_yolo():
-    git.Git("./").clone("git@github.com:ultralytics/yolov5.git")
+    git.Git("src/").clone("git@github.com:ultralytics/yolov5.git")
     os.system(
         "python train.py --img 640 --batch 4 --epochs 20 --optimizer Adam --data polus_yolov5.yaml --weights yolov5s6.pt  --entity coal-composition-control")
 
