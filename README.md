@@ -19,4 +19,4 @@ streamlit run streamplit.py
 
 **Example of work**
 
-![demo](https://github.com/0x0000dead/coal-classification-miners/tree/main/resources/demo.gif)
+![demo](https://github.com/0x0000dead/coal-classification-miners/blob/main/resources/demo.gif?raw=true)
