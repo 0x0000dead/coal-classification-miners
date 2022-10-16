@@ -1,6 +1,7 @@
 import json
 
 import cv2
+import numpy as np
 import streamlit as st
 from matplotlib import pyplot as plt
 
@@ -34,15 +35,22 @@ def bboxes_types_list(bboxes_list):
     res = [0] * len(Ores)
     for bbox in bboxes_list:
         res[bbox['type']] += bbox['type']
+    return res
 
 
 def draw_area_chart(place, list_bboxes_types, bboxes_list):
     if len(list_bboxes_types) >= constants.MAX_HIST_LEN:
         del list_bboxes_types[0]
-    list_bboxes_types.append(bboxes_types_list(bboxes_list))
+    if len(list_bboxes_types) == 0:
+        list_bboxes_types.append(bboxes_types_list(bboxes_list))
+    else:
+        list_bboxes_types.append(list(map(sum, zip(list_bboxes_types[-1], bboxes_types_list(bboxes_list)))))
 
     fig, ax = plt.subplots()
-    ax.stackplot(list_bboxes_types)
+    y = np.array(list_bboxes_types)
+    y = y.transpose()
+    y = y / y.sum(axis=0).astype(float) * 100
+    ax.stackplot(range(len(list_bboxes_types)), y, legend=[o.description for o in Ores])
     ax.set_title('100 % stacked area chart')
     ax.set_ylabel('Percent (%)')
     ax.set_xlabel("time in frames")
